@@ -1,4 +1,4 @@
-package oteller
+package dice
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ func init() {
 	}
 }
 
-func rolldice(w http.ResponseWriter, r *http.Request) {
+func Rolldice(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracer.Start(r.Context(), "roll")
 	defer span.End()
 

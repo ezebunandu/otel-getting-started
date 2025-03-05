@@ -10,6 +10,9 @@ import (
 	"os/signal"
 	"time"
 
+	oteller "rolldice/otel"
+	dice "rolldice/dice"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -26,7 +29,7 @@ func run() (err error) {
 	defer stop()
 
 	// Set up OpenTelemetry.
-	otelShutdown, err := setupOTelSDK(ctx)
+	otelShutdown, err := oteller.SetupOTelSDK(ctx)
 	if err != nil {
 		return
 	}
@@ -78,8 +81,8 @@ func newHTTPHandler() http.Handler {
 	}
 
 	// Register handlers.
-	handleFunc("/rolldice", rolldice)
-	handleFunc("/rolldice/{player}", rolldice)
+	handleFunc("/rolldice", dice.Rolldice)
+	handleFunc("/rolldice/{player}", dice.Rolldice)
 
 	// Add metrics endpoint for Prometheus
 	mux.Handle("/metrics", promhttp.Handler())
