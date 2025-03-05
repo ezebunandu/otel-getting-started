@@ -5,8 +5,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: tempfetcher
     ports:
       - "8080:8080"
+    volumes:
+      - ./config.yml:/app/config.yml
+    command: ["-c", "/app/config.yml"]
+    environment:
+      - OWM_API_KEY=${OWM_API_KEY}
     networks:
       - otel-network
 

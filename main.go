@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"log"
 	"net"
 	"net/http"
@@ -11,19 +12,28 @@ import (
 	"time"
 
 	oteller "rolldice/otel"
-	dice "rolldice/dice"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
-	if err := run(); err != nil {
+	c := flag.String("c", "config.yml", "Config file")
+	flag.Parse()
+
+	cfg, err := NewConfig(*c)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err := run(cfg); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func run() (err error) {
+func run(cfg *Config) (err error) {
+	SetConfig(cfg)
+
+
 	// Handle SIGINT (CTRL+C) gracefully.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
@@ -81,11 +91,12 @@ func newHTTPHandler() http.Handler {
 	}
 
 	// Register handlers.
-	handleFunc("/rolldice", dice.Rolldice)
-	handleFunc("/rolldice/{player}", dice.Rolldice)
+	handleFunc("/getTemp", GetCurrentTemperature())
 
 	// Add metrics endpoint for Prometheus
 	mux.Handle("/metrics", promhttp.Handler())
 
-	return mux
+	handler := otelhttp.NewHandler(mux, "/")
+
+	return handler
 }

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o rolldice main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o rolldice main.go temperature.go config.go
 
 # Final stage
 FROM docker.io/alpine:latest
