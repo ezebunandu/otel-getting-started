@@ -11,28 +11,30 @@ import (
 	"os/signal"
 	"time"
 
-	oteller "rolldice/otel"
+	oteller "github.com/ezebunandu/oteller/otel"
+	"github.com/ezebunandu/oteller/pkg/config"
+	"github.com/ezebunandu/oteller/pkg/temperature"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
-	c := flag.String("c", "config.yml", "Config file")
+	configPath := flag.String("c", "config.yml", "path to config file")
 	flag.Parse()
 
-	cfg, err := NewConfig(*c)
+	cfg, err := config.New(*configPath)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
+
 	if err := run(cfg); err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 }
 
-func run(cfg *Config) (err error) {
-	SetConfig(cfg)
-
+func run(cfg *config.Config) (err error) {
+	temperature.SetConfig(cfg)
 
 	// Handle SIGINT (CTRL+C) gracefully.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -91,7 +93,7 @@ func newHTTPHandler() http.Handler {
 	}
 
 	// Register handlers.
-	handleFunc("/getTemp", GetCurrentTemperature())
+	handleFunc("/getTemp", temperature.GetCurrentTemperature())
 
 	// Add metrics endpoint for Prometheus
 	mux.Handle("/metrics", promhttp.Handler())
