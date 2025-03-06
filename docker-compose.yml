@@ -13,6 +13,7 @@ services:
     command: ["-c", "/app/config.yml"]
     environment:
       - OWM_API_KEY=${OWM_API_KEY}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4318
     networks:
       - otel-network
 
@@ -22,6 +23,17 @@ services:
       - "9091:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - otel-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.54  # Updated to v2 (1.54.0)
+    ports:
+      - "16686:16686"  # Web UI
+      - "4318:4318"    # OTLP HTTP receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
     networks:
       - otel-network
 
