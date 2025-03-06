@@ -1,25 +1,22 @@
-package main
+package config
 
 import (
-	_ "embed"
-	"fmt"
 	"os"
     "strconv"
-    "gopkg.in/yaml.v3"
+    "fmt"
 
+	"gopkg.in/yaml.v3"
 )
 
-
 type Config struct {
-    Unit string `yaml:"unit"`
-    Lang string `yaml:"lang"`
-    Longitude float64 `yaml:"longitude"`
-    Latitude float64 `yaml:"latitude"`
-    OWMAPIKey string `yaml:"owm_api_key"`
+	Unit      string  `yaml:"unit"`
+	Lang      string  `yaml:"lang"`
+	Longitude float64 `yaml:"longitude"`
+	Latitude  float64 `yaml:"latitude"`
+	OWMAPIKey string  `yaml:"owm_api_key"`
 }
 
-
-func (Cfg *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (cfg *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
     var raw struct {
         LongitudeStr string `yaml:"longitude"`
         LatitudeStr string `yaml:"latitude"`
@@ -40,32 +37,29 @@ func (Cfg *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
     if err != nil  || latitude < -90 || latitude > 90{
         return fmt.Errorf("invalid latitude: %v (must be between -90 and 90)", raw.LatitudeStr)
     }
-    Cfg.Unit = raw.Unit
-    Cfg.Lang = raw.Lang
-    Cfg.Longitude = longitude
-    Cfg.Latitude = latitude
-    Cfg.OWMAPIKey = raw.OWMAPIKey
+    cfg.Unit = raw.Unit
+    cfg.Lang = raw.Lang
+    cfg.Longitude = longitude
+    cfg.Latitude = latitude
+    cfg.OWMAPIKey = raw.OWMAPIKey
     return nil
 }
 
-func NewConfig(configFile string) (*Config, error) {
-    cf, err := os.Open(configFile)
-    if err != nil {
-        return nil, err
-    }
-    defer cf.Close()
+func New(path string) (*Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
 
-    var cfg Config
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, err
+	}
 
-    if err := yaml.NewDecoder(cf).Decode(&cfg); err != nil {
-        return nil, err
-    }
-
-
-    //Override OWM API Key with env var
+     //Override OWM API Key with env var
     if ownKey, ok := os.LookupEnv("OWM_API_KEY"); ok {
         cfg.OWMAPIKey = ownKey
     }
 
-    return &cfg, nil
+	return &cfg, nil
 }

@@ -5,17 +5,17 @@ WORKDIR /app
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o rolldice main.go temperature.go config.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o oteller main.go 
 
 # Final stage
 FROM docker.io/alpine:latest
-RUN mkdir /app && adduser -h /app -D rolldice
+RUN mkdir /app && adduser -h /app -D oteller
 WORKDIR /app
-COPY --chown=rolldice:rolldice --from=builder /app/rolldice .
+COPY --chown=oteller:oteller --from=builder /app/oteller .
 
 # Expose the application port
 EXPOSE 8080
 
 # Run the application
-USER rolldice
-ENTRYPOINT ["/app/rolldice"] 
+USER oteller
+ENTRYPOINT ["/app/oteller"] 
