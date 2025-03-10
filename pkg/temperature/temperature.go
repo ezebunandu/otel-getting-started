@@ -40,7 +40,7 @@ func SetConfig(c *config.Config) {
 func GetCurrentTemperature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		tracer := otel.Tracer(name)
+		tracer := otel.Tracer("get_current_temp")
 		ctx, span := tracer.Start(ctx, "fetch_temperature")
 		defer span.End()
 

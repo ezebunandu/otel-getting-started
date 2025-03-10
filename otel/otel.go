@@ -11,7 +11,9 @@ import (
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
@@ -86,6 +88,11 @@ func newTracerProvider() (*trace.TracerProvider, error) {
 	tracerProvider := trace.NewTracerProvider(
 		trace.WithBatcher(exporter,
 			trace.WithBatchTimeout(time.Second)),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("temp_fetcher"),
+		),),
+		trace.WithSampler(trace.AlwaysSample()),
 	)
 	return tracerProvider, nil
 }
